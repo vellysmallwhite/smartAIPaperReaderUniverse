@@ -22,7 +22,7 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Validate App Spec
-        run: doctl apps spec validate services/.do/app.yaml --schema-only
+        run: doctl apps spec validate .do/app.yaml --schema-only
 
       - name: Resolve App ID
         run: |
@@ -38,10 +38,10 @@ jobs:
         run: |
           if [ -z "$APP_ID" ]; then
             echo "No existing app found. Creating..."
-            doctl apps create --spec services/.do/app.yaml --wait
+            doctl apps create --spec .do/app.yaml --wait
           else
             echo "Updating existing app: $APP_ID"
-            doctl apps update "$APP_ID" --spec services/.do/app.yaml --wait
+            doctl apps update "$APP_ID" --spec .do/app.yaml --wait
           fi
 
       - name: Show App URL
