@@ -28,12 +28,12 @@ jobs:
       - name: Check remote server basics
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            'echo "=== Server Info ==="; whoami; pwd; which git; which docker; ls -la ~/'
+            "echo '=== Server Info ==='; whoami; pwd; which git; which docker; ls -la ~/"
 
       - name: Clean and clone repository
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            'rm -rf ~/smartAIPaperReaderUniverse && git clone https://github.com/vellysmallwhite/smartAIPaperReaderUniverse.git && ls -la ~/smartAIPaperReaderUniverse/'
+            "rm -rf ~/smartAIPaperReaderUniverse && git clone https://github.com/vellysmallwhite/smartAIPaperReaderUniverse.git && ls -la ~/smartAIPaperReaderUniverse/"
 
       - name: Create .env file
         run: |
@@ -52,5 +52,5 @@ jobs:
       - name: Deploy with Docker Compose
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            'cd ~/smartAIPaperReaderUniverse/services && docker compose -f docker-compose.prod.yml up -d --build neo4j qdrant backend scheduler'
+            "cd ~/smartAIPaperReaderUniverse/services && docker compose -f docker-compose.prod.yml up -d --build neo4j qdrant backend scheduler"
 
