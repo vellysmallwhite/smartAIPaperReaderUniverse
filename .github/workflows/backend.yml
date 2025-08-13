@@ -29,20 +29,17 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" > id_deploy
           chmod 600 id_deploy
 
-      - name: Prepare remote directory
-        run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'mkdir -p "$HOME/smartAIPaperReaderUniverse/services"'
-
       - name: Rsync services to server
         run: |
+          RSYNC_DEST="$HOME/smartAIPaperReaderUniverse/services/"
           rsync -az --delete \
             -e "ssh -i id_deploy -o StrictHostKeyChecking=no" \
-            ${SRC}/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/smartAIPaperReaderUniverse/services/
+            --rsync-path="sh -lc 'mkdir -p \$HOME/smartAIPaperReaderUniverse/services && rsync'" \
+            ${SRC}/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:"$RSYNC_DEST"
 
       - name: Remote deploy with docker compose
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          mkdir -p "$HOME/smartAIPaperReaderUniverse/services"
           cd "$HOME/smartAIPaperReaderUniverse/services"
           # 写入生产环境 .env（仅用于容器内部读取）
           cat > ./agent-crawler/.env <<EOT
