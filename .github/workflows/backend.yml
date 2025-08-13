@@ -33,7 +33,7 @@ jobs:
         run: |
           # 首先确保目标目录存在
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "mkdir -p \$HOME/smartAIPaperReaderUniverse/services"
+            'mkdir -p $HOME/smartAIPaperReaderUniverse/services'
           
           # 然后同步文件
           rsync -az --delete \
