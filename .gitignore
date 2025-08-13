@@ -1,0 +1,68 @@
+# Global
+.DS_Store
+*.log
+.env
+.env.*
+.env.*.local
+*.pyc
+__pycache__/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Frontend (Next.js)
+genesis-frontend/.next/
+genesis-frontend/node_modules/
+genesis-frontend/.vercel/
+genesis-frontend/coverage/
+genesis-frontend/.env*
+genesis-frontend/npm-debug.log*
+genesis-frontend/yarn-error.log
+genesis-frontend/yarn-debug.log*
+genesis-frontend/.pnpm-debug.log*
+
+# Backend (Python)
+agent-crawler/.venv/
+agent-crawler/venv/
+agent-crawler/__pycache__/
+agent-crawler/.mypy_cache/
+agent-crawler/.pytest_cache/
+agent-crawler/*.pyc
+agent-crawler/.env*
+agent-crawler/build/
+agent-crawler/dist/
+agent-crawler/*.egg-info/
+
+# Backend data directories (contains sensitive/large data)
+agent-crawler/neo4j_data/
+agent-crawler/qdrant_data/
+
+# Log files
+agent-crawler/*.log
+agent-crawler/logs/
+agent-crawler/daily_scheduler.log
+agent-crawler/server.log
+
+# Temporary files
+agent-crawler/1
+agent-crawler/temp/
+agent-crawler/tmp/
+
+# OS specific
+Thumbs.db
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Do not upload product design
+产品设计
+
+# Git directories (if any nested repos exist)
+**/.git/
