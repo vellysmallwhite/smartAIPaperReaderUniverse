@@ -29,9 +29,9 @@ def cmd_process_pdf(
 @app.command("ingest-arxiv")
 def ingest_arxiv(
     arxiv_id: str = typer.Argument(..., help="arXiv ID to ingest, e.g., 1706.03762"),
-    neo4j_uri: str = typer.Option("bolt://localhost:7687", help="Neo4j bolt URI"),
-    neo4j_user: str = typer.Option("neo4j", help="Neo4j user"),
-    neo4j_password: str = typer.Option("neo4j_password", help="Neo4j password"),
+    neo4j_uri: str = typer.Option(os.getenv("NEO4J_URI", "bolt://neo4j:7687"), help="Neo4j bolt URI"),
+    neo4j_user: str = typer.Option(os.getenv("NEO4J_USER", "neo4j"), help="Neo4j user"),
+    neo4j_password: str = typer.Option(os.getenv("NEO4J_PASSWORD", "neo4j_password"), help="Neo4j password"),
 ):
     from datetime import date
     
@@ -39,7 +39,8 @@ def ingest_arxiv(
     if not papers:
         raise typer.BadParameter(f"arXiv id not found: {arxiv_id}")
     paper = papers[0]
-    qdrant = QdrantClient(url="http://localhost:6333")
+    qdrant_url = os.getenv("QDRANT_URL", "http://qdrant:6333")
+    qdrant = QdrantClient(url=qdrant_url)
     graph = Neo4jManager(neo4j_uri, neo4j_user, neo4j_password)
     try:
         process_and_ingest_paper(paper, qdrant, graph, current_depth=0, fetch_date=str(date.today()))
@@ -110,9 +111,9 @@ def backfill_metadata_cmd(
 @app.command("smart-ingest")
 def smart_ingest_cmd(
     arxiv_id: str = typer.Argument(..., help="arXiv ID to intelligently ingest with important references, e.g., 1706.03762"),
-    neo4j_uri: str = typer.Option("bolt://localhost:7687", envvar="NEO4J_URI", help="Neo4j bolt URI"),
-    neo4j_user: str = typer.Option("neo4j", envvar="NEO4J_USER", help="Neo4j user"),
-    neo4j_password: str = typer.Option("neo4j_password", envvar="NEO4J_PASSWORD", help="Neo4j password"),
+    neo4j_uri: str = typer.Option(os.getenv("NEO4J_URI", "bolt://neo4j:7687"), envvar="NEO4J_URI", help="Neo4j bolt URI"),
+    neo4j_user: str = typer.Option(os.getenv("NEO4J_USER", "neo4j"), envvar="NEO4J_USER", help="Neo4j user"),
+    neo4j_password: str = typer.Option(os.getenv("NEO4J_PASSWORD", "neo4j_password"), envvar="NEO4J_PASSWORD", help="Neo4j password"),
     max_depth: int = typer.Option(1, help="Maximum recursion depth for reference expansion"),
 ):
     """智能地抓取论文及其最重要的引用（带深度控制）"""
@@ -130,7 +131,8 @@ def smart_ingest_cmd(
             raise typer.BadParameter(f"arXiv id not found: {arxiv_id}")
         paper = papers[0]
         
-        qdrant = QdrantClient(url="http://localhost:6333")
+        qdrant_url = os.getenv("QDRANT_URL", "http://qdrant:6333")
+        qdrant = QdrantClient(url=qdrant_url)
         graph = Neo4jManager(neo4j_uri, neo4j_user, neo4j_password)
         
         try:

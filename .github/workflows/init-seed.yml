@@ -1,0 +1,25 @@
+name: Backend - Initialize DB and Seed
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  init-and-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Create Neo4j Indexes & Seed Paper
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          cd ~/smartAIPaperReaderUniverse/services
+          # wait a bit in case db just started
+          sleep 10
+          docker exec smart-paper-neo4j cypher-shell -u neo4j -p ${{ secrets.NEO4J_PASSWORD }} "CREATE INDEX paper_arxiv_id IF NOT EXISTS FOR (p:Paper) ON (p.arxiv_id);"
+          docker exec smart-paper-neo4j cypher-shell -u neo4j -p ${{ secrets.NEO4J_PASSWORD }} "CREATE INDEX paper_fetch_date IF NOT EXISTS FOR (p:Paper) ON (p.fetch_date);"
+          docker exec smart-paper-backend python cli.py ingest-arxiv --paper-ids "1706.03762" --smart-mode
+          EOF
+

@@ -42,7 +42,7 @@ cd smartAIPaperReaderUniverse
 ### 2. 启动数据库服务
 ```bash
 cd agent-crawler
-docker-compose up -d
+docker compose up -d neo4j qdrant
 ```
 
 ### 3. 配置后端
@@ -61,11 +61,11 @@ cp .env.example .env
 
 ### 4. 启动后端服务
 ```bash
-# 启动API服务器
-python -m uvicorn server.main:app --host 0.0.0.0 --port 8080
+# 启动API服务器（Docker 推荐）
+docker compose -f docker-compose.prod.yml up -d backend
 
 # (可选) 启动每日论文抓取调度器
-python daily_scheduler.py daemon
+docker compose -f docker-compose.prod.yml up -d scheduler
 ```
 
 ### 5. 启动前端
@@ -80,6 +80,16 @@ npm run dev
 - **API文档**: http://localhost:8080/docs
 - **Neo4j浏览器**: http://localhost:7474 (neo4j/neo4j_password)
 - **Qdrant仪表板**: http://localhost:6333/dashboard
+
+### 7. 首次初始化（可在一台机上执行）
+```bash
+# 创建索引（视情况在API中也可自建）
+docker exec smart-paper-neo4j cypher-shell -u neo4j -p smart_paper_secure_password_2024 "CREATE INDEX paper_arxiv_id IF NOT EXISTS FOR (p:Paper) ON (p.arxiv_id);"
+docker exec smart-paper-neo4j cypher-shell -u neo4j -p smart_paper_secure_password_2024 "CREATE INDEX paper_fetch_date IF NOT EXISTS FOR (p:Paper) ON (p.fetch_date);"
+
+# 以 Attention Is All You Need 作为种子
+docker exec smart-paper-backend python cli.py ingest-arxiv --paper-ids "1706.03762" --smart-mode
+```
 
 ## 📊 数据流程
 
@@ -133,7 +143,7 @@ python cli.py get-insight --paper-id "2301.07041"
 python reset_database.py
 ```
 
-### 前端开发
+### 前端开发（本地）
 ```bash
 # 开发模式
 npm run dev

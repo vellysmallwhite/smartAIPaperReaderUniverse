@@ -36,6 +36,9 @@ agent-crawler/.env*
 agent-crawler/build/
 agent-crawler/dist/
 agent-crawler/*.egg-info/
+agent-crawler/.coverage
+agent-crawler/.coverage.*
+agent-crawler/.tox/
 
 # Backend data directories (contains sensitive/large data)
 agent-crawler/neo4j_data/
@@ -46,6 +49,7 @@ agent-crawler/*.log
 agent-crawler/logs/
 agent-crawler/daily_scheduler.log
 agent-crawler/server.log
+agent-crawler/*.db
 
 # Temporary files
 agent-crawler/1
@@ -66,3 +70,5 @@ Desktop.ini
 
 # Git directories (if any nested repos exist)
 **/.git/
+
+# Allow workflows tracked; ignore only Actions runtime artifacts (none by default)

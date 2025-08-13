@@ -36,6 +36,10 @@ async def shutdown_event():
     """应用关闭事件"""
     logger.info("🛑 关闭 DigitalPaperAgent API 服务器")
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 
 class GraphResponse(BaseModel):
     nodes: List[Dict[str, Any]]

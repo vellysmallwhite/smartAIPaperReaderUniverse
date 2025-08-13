@@ -19,9 +19,7 @@ const nextConfig = {
   poweredByHeader: false,
   
   // 生产环境优化
-  experimental: {
-    optimizeCss: true,
-  }
+  experimental: {}
 }
 
 module.exports = nextConfig

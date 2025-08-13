@@ -1,0 +1,41 @@
+name: Frontend - Netlify Deploy
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/genesis-frontend/**'
+      - 'services/.github/workflows/frontend.yml'
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/genesis-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Deploy to Netlify
+        uses: netlify/actions/cli@v4.4.1
+        with:
+          args: deploy --dir=.next --prod
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
