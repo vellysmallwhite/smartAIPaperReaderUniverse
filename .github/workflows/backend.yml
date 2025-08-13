@@ -29,12 +29,36 @@ jobs:
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           
+          echo "=== Starting deployment ==="
+          echo "Current user: $(whoami)"
+          echo "Home directory: $HOME"
+          echo "Current working directory: $(pwd)"
+          
+          # 检查基础工具
+          which git || echo "Git not found!"
+          which docker || echo "Docker not found!"
+          which docker-compose || echo "Docker Compose not found!"
+          
           # 清理旧的部署目录
+          echo "=== Cleaning old deployment ==="
           rm -rf ~/smartAIPaperReaderUniverse
           
           # 克隆最新代码
+          echo "=== Cloning repository ==="
           git clone https://github.com/vellysmallwhite/smartAIPaperReaderUniverse.git
+          
+          if [ ! -d ~/smartAIPaperReaderUniverse ]; then
+            echo "ERROR: Git clone failed!"
+            exit 1
+          fi
+          
+          echo "=== Repository cloned successfully ==="
+          ls -la ~/smartAIPaperReaderUniverse/
+          
           cd ~/smartAIPaperReaderUniverse/services
+          echo "=== Changed to services directory ==="
+          pwd
+          ls -la
           
           # 写入生产环境 .env
           cat > ./agent-crawler/.env << EOT
