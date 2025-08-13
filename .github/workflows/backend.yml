@@ -31,7 +31,7 @@ jobs:
 
       - name: Prepare remote directory
         run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/smartAIPaperReaderUniverse/services"
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'mkdir -p "$HOME/smartAIPaperReaderUniverse/services"'
 
       - name: Rsync services to server
         run: |
@@ -42,7 +42,8 @@ jobs:
       - name: Remote deploy with docker compose
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          cd ~/smartAIPaperReaderUniverse/services
+          mkdir -p "$HOME/smartAIPaperReaderUniverse/services"
+          cd "$HOME/smartAIPaperReaderUniverse/services"
           # 写入生产环境 .env（仅用于容器内部读取）
           cat > ./agent-crawler/.env <<EOT
           GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
