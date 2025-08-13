@@ -31,16 +31,20 @@ jobs:
 
       - name: Rsync services to server
         run: |
-          RSYNC_DEST="$HOME/smartAIPaperReaderUniverse/services/"
+          # 首先确保目标目录存在
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "mkdir -p \$HOME/smartAIPaperReaderUniverse/services"
+          
+          # 然后同步文件
           rsync -az --delete \
             -e "ssh -i id_deploy -o StrictHostKeyChecking=no" \
-            --rsync-path="sh -lc 'mkdir -p \$HOME/smartAIPaperReaderUniverse/services && rsync'" \
-            ${SRC}/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:"$RSYNC_DEST"
+            ${SRC}/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:smartAIPaperReaderUniverse/services/
 
       - name: Remote deploy with docker compose
         run: |
           ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          cd "$HOME/smartAIPaperReaderUniverse/services"
+          cd ~
+          cd smartAIPaperReaderUniverse/services
           # 写入生产环境 .env（仅用于容器内部读取）
           cat > ./agent-crawler/.env <<EOT
           GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}

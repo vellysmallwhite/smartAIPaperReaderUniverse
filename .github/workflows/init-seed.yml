@@ -7,6 +7,13 @@ jobs:
   init-and-seed:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.SSH_HOST }}" || (echo "SSH_HOST is empty" && exit 1)
+          test -n "${{ secrets.SSH_USER }}" || (echo "SSH_USER is empty" && exit 1)
+          test -n "${{ secrets.SSH_KEY }}"  || (echo "SSH_KEY is empty" && exit 1)
+          test -n "${{ secrets.NEO4J_PASSWORD }}" || (echo "NEO4J_PASSWORD is empty" && exit 1)
+
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
