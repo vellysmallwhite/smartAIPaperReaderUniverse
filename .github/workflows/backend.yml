@@ -25,43 +25,20 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" > id_deploy
           chmod 600 id_deploy
 
-      - name: Deploy via git clone on remote server
+      - name: Check remote server basics
         run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          
-          echo "=== Starting deployment ==="
-          echo "Current user: $(whoami)"
-          echo "Home directory: $HOME"
-          echo "Current working directory: $(pwd)"
-          
-          # 检查基础工具
-          which git || echo "Git not found!"
-          which docker || echo "Docker not found!"
-          which docker-compose || echo "Docker Compose not found!"
-          
-          # 清理旧的部署目录
-          echo "=== Cleaning old deployment ==="
-          rm -rf ~/smartAIPaperReaderUniverse
-          
-          # 克隆最新代码
-          echo "=== Cloning repository ==="
-          git clone https://github.com/vellysmallwhite/smartAIPaperReaderUniverse.git
-          
-          if [ ! -d ~/smartAIPaperReaderUniverse ]; then
-            echo "ERROR: Git clone failed!"
-            exit 1
-          fi
-          
-          echo "=== Repository cloned successfully ==="
-          ls -la ~/smartAIPaperReaderUniverse/
-          
-          cd ~/smartAIPaperReaderUniverse/services
-          echo "=== Changed to services directory ==="
-          pwd
-          ls -la
-          
-          # 写入生产环境 .env
-          cat > ./agent-crawler/.env << EOT
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'echo "=== Server Info ==="; whoami; pwd; which git; which docker; ls -la ~/'
+
+      - name: Clean and clone repository
+        run: |
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'rm -rf ~/smartAIPaperReaderUniverse && git clone https://github.com/vellysmallwhite/smartAIPaperReaderUniverse.git && ls -la ~/smartAIPaperReaderUniverse/'
+
+      - name: Create .env file
+        run: |
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd ~/smartAIPaperReaderUniverse/services && cat > ./agent-crawler/.env << 'EOT'
           GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
           NEO4J_URI=bolt://neo4j:7687
           NEO4J_USER=neo4j
@@ -70,10 +47,10 @@ jobs:
           DAILY_PAPER_COUNT=${{ secrets.DAILY_PAPER_COUNT }}
           DAILY_SMART_MODE=${{ secrets.DAILY_SMART_MODE }}
           DAILY_SCHEDULE_TIME=${{ secrets.DAILY_SCHEDULE_TIME }}
-          EOT
-          
-          # 部署容器
-          docker compose -f docker-compose.prod.yml up -d --build neo4j qdrant backend scheduler
-          
-          EOF
+          EOT"
+
+      - name: Deploy with Docker Compose
+        run: |
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            'cd ~/smartAIPaperReaderUniverse/services && docker compose -f docker-compose.prod.yml up -d --build neo4j qdrant backend scheduler'
 
