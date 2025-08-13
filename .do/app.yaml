@@ -1,0 +1,35 @@
+spec:
+  name: smart-paper-backend
+  region: sgp1
+  services:
+    - name: backend
+      source_dir: services/agent-crawler
+      dockerfile_path: services/agent-crawler/Dockerfile
+      http_port: 8080
+      routes:
+        - path: /
+      envs:
+        - key: GROQ_API_KEY
+          scope: RUN_AND_BUILD_TIME
+          type: SECRET
+          value: ${GROQ_API_KEY}
+        - key: NEO4J_URI
+          scope: RUN_TIME
+          value: bolt://neo4j:7687
+        - key: NEO4J_USER
+          scope: RUN_TIME
+          value: neo4j
+        - key: NEO4J_PASSWORD
+          scope: RUN_TIME
+          type: SECRET
+          value: ${NEO4J_PASSWORD}
+        - key: QDRANT_URL
+          scope: RUN_TIME
+          value: http://qdrant:6333
+        - key: ENABLE_CONCURRENT_PROCESSING
+          scope: RUN_TIME
+          value: "false"
+        - key: GROQ_MODEL
+          scope: RUN_TIME
+          value: llama-3.1-70b-versatile
+

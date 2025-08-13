@@ -1,4 +1,4 @@
-name: Backend - Docker SSH Deploy
+name: Backend - DO App Platform Deploy
 
 on:
   push:
@@ -12,45 +12,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate required secrets
+      - name: Validate DigitalOcean token
         run: |
-          test -n "${{ secrets.SSH_HOST }}" || (echo "SSH_HOST is empty" && exit 1)
-          test -n "${{ secrets.SSH_USER }}" || (echo "SSH_USER is empty" && exit 1)
-          test -n "${{ secrets.SSH_KEY }}"  || (echo "SSH_KEY is empty" && exit 1)
-          test -n "${{ secrets.GROQ_API_KEY }}" || (echo "GROQ_API_KEY is empty" && exit 1)
-          test -n "${{ secrets.NEO4J_PASSWORD }}" || (echo "NEO4J_PASSWORD is empty" && exit 1)
+          test -n "${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" || (echo "DIGITALOCEAN_ACCESS_TOKEN is empty" && exit 1)
 
-      - name: Write SSH key to file
-        run: |
-          echo "${{ secrets.SSH_KEY }}" > id_deploy
-          chmod 600 id_deploy
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      - name: Check remote server basics
-        run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "echo '=== Server Info ==='; whoami; pwd; which git; which docker; ls -la ~/"
+      - name: Validate App Spec
+        run: doctl apps spec validate services/.do/app.yaml --schema-only
 
-      - name: Clean and clone repository
+      - name: Resolve App ID
         run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "rm -rf ~/smartAIPaperReaderUniverse && git clone https://github.com/vellysmallwhite/smartAIPaperReaderUniverse.git && ls -la ~/smartAIPaperReaderUniverse/"
+          APP_NAME="smart-paper-backend"
+          APP_ID="${{ secrets.DO_APP_ID }}"
+          if [ -z "$APP_ID" ]; then
+            APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | awk -v name="$APP_NAME" '$2==name{print $1}' | head -1)
+          fi
+          echo "APP_ID=$APP_ID" >> $GITHUB_ENV
+          echo "Resolved APP_ID=$APP_ID"
 
-      - name: Create .env file
+      - name: Deploy App (create or update)
         run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ~/smartAIPaperReaderUniverse/services && cat > ./agent-crawler/.env << 'EOT'
-          GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
-          NEO4J_URI=bolt://neo4j:7687
-          NEO4J_USER=neo4j
-          NEO4J_PASSWORD=${{ secrets.NEO4J_PASSWORD }}
-          QDRANT_URL=http://qdrant:6333
-          DAILY_PAPER_COUNT=${{ secrets.DAILY_PAPER_COUNT }}
-          DAILY_SMART_MODE=${{ secrets.DAILY_SMART_MODE }}
-          DAILY_SCHEDULE_TIME=${{ secrets.DAILY_SCHEDULE_TIME }}
-          EOT"
+          if [ -z "$APP_ID" ]; then
+            echo "No existing app found. Creating..."
+            doctl apps create --spec services/.do/app.yaml --wait
+          else
+            echo "Updating existing app: $APP_ID"
+            doctl apps update "$APP_ID" --spec services/.do/app.yaml --wait
+          fi
 
-      - name: Deploy with Docker Compose
+      - name: Show App URL
         run: |
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ~/smartAIPaperReaderUniverse/services && docker compose -f docker-compose.prod.yml up -d --build neo4j qdrant backend scheduler"
+          if [ -z "$APP_ID" ]; then
+            APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | awk -v name="smart-paper-backend" '$2==name{print $1}' | head -1)
+          fi
+          doctl apps get "$APP_ID" --format DefaultIngress --no-header || true
 
