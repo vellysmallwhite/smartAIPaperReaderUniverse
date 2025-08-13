@@ -16,8 +16,8 @@ jobs:
         run: |
           test -n "${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" || (echo "DIGITALOCEAN_ACCESS_TOKEN is empty" && exit 1)
 
-      - name: Install doctl
-        uses: digitalocean/action-doctl@v2
+      - name: GitHub Action for DigitalOcean - doctl
+        uses: digitalocean/action-doctl@v2.5.1
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
