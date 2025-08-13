@@ -31,12 +31,8 @@ jobs:
 
       - name: Rsync services to server
         run: |
-          # 首先确保目标目录存在
-          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            'mkdir -p $HOME/smartAIPaperReaderUniverse/services'
-          
-          # 然后同步文件
-          rsync -az --delete \
+          # 使用 rsync 自动创建目录结构
+          rsync -az --delete --mkpath \
             -e "ssh -i id_deploy -o StrictHostKeyChecking=no" \
             ${SRC}/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:smartAIPaperReaderUniverse/services/
 
