@@ -2,8 +2,12 @@ name: smart-paper-backend
 region: sgp1
 services:
   - name: backend
+    github:
+      repo: vellysmallwhite/smartAIPaperReaderUniverse
+      branch: production
+      deploy_on_push: true
     source_dir: services/agent-crawler
-    dockerfile_path: services/agent-crawler/Dockerfile
+    dockerfile_path: Dockerfile
     http_port: 8080
     routes:
       - path: /
