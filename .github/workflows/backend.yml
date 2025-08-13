@@ -12,20 +12,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.SSH_HOST }}" || (echo "SSH_HOST is empty" && exit 1)
+          test -n "${{ secrets.SSH_USER }}" || (echo "SSH_USER is empty" && exit 1)
+          test -n "${{ secrets.SSH_KEY }}"  || (echo "SSH_KEY is empty" && exit 1)
+          test -n "${{ secrets.GROQ_API_KEY }}" || (echo "GROQ_API_KEY is empty" && exit 1)
+          test -n "${{ secrets.NEO4J_PASSWORD }}" || (echo "NEO4J_PASSWORD is empty" && exit 1)
+
+      - name: Write SSH key to file
+        run: |
+          echo "${{ secrets.SSH_KEY }}" > id_deploy
+          chmod 600 id_deploy
 
       - name: Rsync services to server
         run: |
           rsync -az --delete \
-            -e "ssh -o StrictHostKeyChecking=no" \
+            -e "ssh -i id_deploy -o StrictHostKeyChecking=no" \
             services/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:~/smartAIPaperReaderUniverse/services/
 
       - name: Remote deploy with docker compose
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           cd ~/smartAIPaperReaderUniverse/services
           # 写入生产环境 .env（仅用于容器内部读取）
           cat > ./agent-crawler/.env <<EOT
