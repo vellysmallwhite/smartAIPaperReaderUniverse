@@ -1,0 +1,61 @@
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv
+venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Data directories
+neo4j_data/
+qdrant_data/
+
+# Environment files
+.env*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+1
+temp/
+tmp/
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Others
+.git
+.gitignore
+README.md
+DEPLOYMENT.md
+*.md
