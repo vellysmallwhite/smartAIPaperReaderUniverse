@@ -1,20 +1,24 @@
-name: Frontend - Netlify Deploy
+name: Frontend - Netlify Deploy (Paused)
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'services/genesis-frontend/**'
-      - 'services/.github/workflows/frontend.yml'
+  # 暂停前端自动部署，仅保留手动触发
   workflow_dispatch: {}
 
 jobs:
   build-and-deploy:
+    # 暂停执行
+    if: ${{ false }}
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: services/genesis-frontend
     steps:
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.NETLIFY_AUTH_TOKEN }}" || (echo "NETLIFY_AUTH_TOKEN is empty" && exit 1)
+          test -n "${{ secrets.NETLIFY_SITE_ID }}" || (echo "NETLIFY_SITE_ID is empty" && exit 1)
+          test -n "${{ secrets.NEXT_PUBLIC_API_URL }}" || (echo "NEXT_PUBLIC_API_URL is empty" && exit 1)
+
       - uses: actions/checkout@v4
 
       - name: Use Node 18
