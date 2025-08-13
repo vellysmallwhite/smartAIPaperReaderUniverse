@@ -29,6 +29,10 @@ jobs:
           echo "${{ secrets.SSH_KEY }}" > id_deploy
           chmod 600 id_deploy
 
+      - name: Prepare remote directory
+        run: |
+          ssh -i id_deploy -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/smartAIPaperReaderUniverse/services"
+
       - name: Rsync services to server
         run: |
           rsync -az --delete \
