@@ -6,48 +6,19 @@ on:
     tags: ['v*']
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate DigitalOcean token
-        run: |
-          test -n "${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" || (echo "DIGITALOCEAN_ACCESS_TOKEN is empty" && exit 1)
-
-      - name: GitHub Action for DigitalOcean - doctl
-        uses: digitalocean/action-doctl@v2.5.1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Deploy the app
+        uses: digitalocean/app_action/deploy@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
-
-      - name: Validate App Spec
-        run: doctl apps spec validate .do/app.yaml --schema-only
-
-      - name: Resolve App ID
-        run: |
-          APP_NAME="smart-paper-backend"
-          APP_ID="${{ secrets.DO_APP_ID }}"
-          if [ -z "$APP_ID" ]; then
-            APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | awk -v name="$APP_NAME" '$2==name{print $1}' | head -1)
-          fi
-          echo "APP_ID=$APP_ID" >> $GITHUB_ENV
-          echo "Resolved APP_ID=$APP_ID"
-
-      - name: Deploy App (create or update)
-        run: |
-          if [ -z "$APP_ID" ]; then
-            echo "No existing app found. Creating..."
-            doctl apps create --spec .do/app.yaml --wait
-          else
-            echo "Updating existing app: $APP_ID"
-            doctl apps update "$APP_ID" --spec .do/app.yaml --wait
-          fi
-
-      - name: Show App URL
-        run: |
-          if [ -z "$APP_ID" ]; then
-            APP_ID=$(doctl apps list --format ID,Spec.Name --no-header | awk -v name="smart-paper-backend" '$2==name{print $1}' | head -1)
-          fi
-          doctl apps get "$APP_ID" --format DefaultIngress --no-header || true
+          app_spec_path: .do/app.yaml
 
