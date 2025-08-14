@@ -1,7 +1,8 @@
 [build]
-  base = "genesis-frontend"
-  command = "npm run build"
-  publish = "out"
+  # 直接在命令里进入子目录构建
+  command = "npm ci --prefix genesis-frontend && npm run build --prefix genesis-frontend"
+  # 指向子目录的静态导出产物
+  publish = "genesis-frontend/out"
 
 [build.environment]
   NODE_VERSION = "18"
