@@ -172,8 +172,9 @@ def fetch_daily_papers_cmd(
         
         print(f"✅ 成功获取 {len(papers)} 篇论文")
         
-        # 初始化数据库连接
-        qdrant = QdrantClient(url="http://localhost:6333")
+        # 初始化数据库连接（容器内默认走服务名）
+        qdrant_url = os.getenv("QDRANT_URL", "http://qdrant:6333")
+        qdrant = QdrantClient(url=qdrant_url)
         graph = Neo4jManager(neo4j_uri, neo4j_user, neo4j_password)
         
         # 如果不是智能模式，临时设置深度为0
