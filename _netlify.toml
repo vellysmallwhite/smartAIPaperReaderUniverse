@@ -1,0 +1,18 @@
+[build]
+  # 直接在命令里进入子目录构建
+  command = "npm ci --prefix genesis-frontend && npm run build --prefix genesis-frontend"
+  # 指向子目录的静态导出产物
+  publish = "genesis-frontend/out"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+  # 我们使用 Next.js 静态导出（out），跳过 Netlify Next.js 运行时插件
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+
+# SPA fallback for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
