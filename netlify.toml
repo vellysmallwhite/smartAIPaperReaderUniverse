@@ -7,6 +7,8 @@
 [build.environment]
   NODE_VERSION = "18"
   NPM_VERSION = "9"
+  # 我们使用 Next.js 静态导出（out），跳过 Netlify Next.js 运行时插件
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 # SPA fallback for client-side routing
 [[redirects]]
